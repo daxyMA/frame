@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MBC 7th Anniversary</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
         .container { margin-top: 20px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); display: inline-block; max-width: 90%; }
@@ -13,8 +12,11 @@
         button { background: #28a745; color: white; border: none; padding: 12px; margin-top: 10px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; }
         button:hover { background: #218838; }
         .crop-container { width: 100%; max-width: 350px; height: auto; margin: auto; border: 2px dashed #ccc; position: relative; }
-        #imagePreview, #canvasResult { max-width: 100%; display: block; margin: auto; }
-        #canvasResult { border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.2); }
+        .image-container { position: relative; width: 500px; height: 500px; }
+        #imagePreview { max-width: 100%; display: block; }
+        #canvasResult { width: 100%; height: 100%; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.2); position: absolute; top: 0; left: 0; }
+        .logo { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 50%; }
+        .logo img { width: 100%; }
     </style>
 </head>
 <body>
@@ -25,7 +27,12 @@
 
         <!-- Cropping Area -->
         <div class="crop-container">
-            <img id="imagePreview" style="display:none;">
+            <div class="image-container">
+                <img id="imagePreview" style="display:none;">
+                <div class="logo" style="display:none;">
+                    <img src="static/logo.png" alt="Logo">
+                </div>
+            </div>
         </div>
         <br>
         <button id="applyFrameBtn" style="display:none;">Apply Frame & Download</button>
@@ -45,6 +52,7 @@
         const applyFrameBtn = document.getElementById("applyFrameBtn");
         const canvasResult = document.getElementById("canvasResult");
         const downloadBtn = document.getElementById("downloadBtn");
+        const logo = document.querySelector(".logo");
         let cropper;
 
         imageUpload.addEventListener("change", function(event) {
@@ -99,22 +107,13 @@
             frameImg.onload = function() {
                 ctx.drawImage(frameImg, 0, 0, 500, 500);
 
-                // Add the logo at the bottom
-                const logoImg = new Image();
-                logoImg.src = "static/logo.png";
-                logoImg.onload = function() {
-                    const logoHeight = 50; // Adjust the height of the logo
-                    const logoWidth = (logoImg.width / logoImg.height) * logoHeight; // Maintain the aspect ratio
-                    const logoX = (500 - logoWidth) / 2; // Center the logo horizontally
-                    const logoY = 500 - logoHeight - 10; // Place the logo 10px above the bottom
+                // Show logo at the bottom
+                logo.style.display = "block";
 
-                    ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
-                    
-                    // Show download button
-                    const finalImage = canvasResult.toDataURL("image/png");
-                    downloadBtn.href = finalImage;
-                    downloadBtn.style.display = "block";
-                };
+                // Show download button
+                const finalImage = canvasResult.toDataURL("image/png");
+                downloadBtn.href = finalImage;
+                downloadBtn.style.display = "block";
             };
         });
     </script>
