@@ -1,41 +1,122 @@
-applyFrameBtn.addEventListener("click", function() {
-    if (!cropper) return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBC 7th Anniversary</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { margin-top: 20px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); display: inline-block; max-width: 90%; }
+        input[type="file"] { padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: white; width: 100%; }
+        button { background: #28a745; color: white; border: none; padding: 12px; margin-top: 10px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; }
+        button:hover { background: #218838; }
+        .crop-container { width: 100%; max-width: 350px; height: auto; margin: auto; border: 2px dashed #ccc; position: relative; }
+        #imagePreview, #canvasResult { max-width: 100%; display: block; margin: auto; }
+        #canvasResult { border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Upload & Adjust Your Photo</h2>
+        <input type="file" id="imageUpload" accept="image/*">
+        <br><br>
 
-    // Get cropped image data
-    const croppedCanvas = cropper.getCroppedCanvas({
-        width: 500,
-        height: 500
-    });
+        <!-- Cropping Area -->
+        <div class="crop-container">
+            <img id="imagePreview" style="display:none;">
+        </div>
+        <br>
+        <button id="applyFrameBtn" style="display:none;">Apply Frame & Download</button>
+        
+        <!-- Final Image -->
+        <h3>Final Framed Image:</h3>
+        <canvas id="canvasResult"></canvas>
+        <br>
+        <a id="downloadBtn" href="#" download="framed.png" style="display:none;">
+            <button>Download Image</button>
+        </a>
+    </div>
 
-    // Draw final image with frame
-    const ctx = canvasResult.getContext("2d");
-    canvasResult.width = 500;
-    canvasResult.height = 500;
+    <script>
+        const imageUpload = document.getElementById("imageUpload");
+        const imagePreview = document.getElementById("imagePreview");
+        const applyFrameBtn = document.getElementById("applyFrameBtn");
+        const canvasResult = document.getElementById("canvasResult");
+        const downloadBtn = document.getElementById("downloadBtn");
+        let cropper;
 
-    // Draw the cropped image
-    ctx.drawImage(croppedCanvas, 0, 0, 500, 500);
+        imageUpload.addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-    // Draw the frame
-    const frameImg = new Image();
-    frameImg.src = "static/frame.png";
-    frameImg.onload = function() {
-        ctx.drawImage(frameImg, 0, 0, 500, 500);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = "block";
 
-        // Add the logo at the bottom
-        const logoImg = new Image();
-        logoImg.src = "static/logo.png";
-        logoImg.onload = function() {
-            const logoHeight = 50; // Adjust the height of the logo
-            const logoWidth = (logoImg.width / logoImg.height) * logoHeight; // Maintain the aspect ratio
-            const logoX = (500 - logoWidth) / 2; // Center the logo horizontally
-            const logoY = 500 - logoHeight - 10; // Place the logo 10px above the bottom
+                // Destroy previous cropper instance
+                if (cropper) {
+                    cropper.destroy();
+                }
 
-            ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
-            
-            // Show download button
-            const finalImage = canvasResult.toDataURL("image/png");
-            downloadBtn.href = finalImage;
-            downloadBtn.style.display = "block";
-        };
-    };
-});
+                // Initialize Cropper.js
+                cropper = new Cropper(imagePreview, {
+                    aspectRatio: 1, // Keep it square
+                    viewMode: 1,
+                    zoomable: true,
+                    movable: true,
+                    autoCropArea: 1,  // Automatically fit the crop box
+                    background: false
+                });
+
+                applyFrameBtn.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        });
+
+        applyFrameBtn.addEventListener("click", function() {
+            if (!cropper) return;
+
+            // Get cropped image data
+            const croppedCanvas = cropper.getCroppedCanvas({
+                width: 500,
+                height: 500
+            });
+
+            // Draw final image with frame
+            const ctx = canvasResult.getContext("2d");
+            canvasResult.width = 500;
+            canvasResult.height = 500;
+
+            // Draw the cropped image
+            ctx.drawImage(croppedCanvas, 0, 0, 500, 500);
+
+            // Draw the frame
+            const frameImg = new Image();
+            frameImg.src = "static/frame.png";
+            frameImg.onload = function() {
+                ctx.drawImage(frameImg, 0, 0, 500, 500);
+
+                // Add the logo at the bottom
+                const logoImg = new Image();
+                logoImg.src = "static/logo.png";
+                logoImg.onload = function() {
+                    const logoHeight = 50; // Adjust the height of the logo
+                    const logoWidth = (logoImg.width / logoImg.height) * logoHeight; // Maintain the aspect ratio
+                    const logoX = (500 - logoWidth) / 2; // Center the logo horizontally
+                    const logoY = 500 - logoHeight - 10; // Place the logo 10px above the bottom
+
+                    ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
+                    
+                    // Show download button
+                    const finalImage = canvasResult.toDataURL("image/png");
+                    downloadBtn.href = finalImage;
+                    downloadBtn.style.display = "block";
+                };
+            };
+        });
+    </script>
+</body>
+</html>
