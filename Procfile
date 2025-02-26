@@ -1,1 +1,1 @@
-web: python WebAppFrame.py
+web: gunicorn WebFrameApp:app
